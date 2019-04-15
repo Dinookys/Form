@@ -1,0 +1,19 @@
+{
+    "name": "dino/form-validation",
+    "authors": [
+        {
+            "name": "DinoOkys",
+            "email": "dinookys@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Classes\\" : "Classes",
+            "Fields\\" : "Fields",
+            "Validators\\" : "Validators",
+            "Form\\" : "Form",
+            "Traits\\": "Traits"
+        }
+    }
+}
