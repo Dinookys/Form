@@ -3,10 +3,9 @@ Classes for constructing forms with validation
 
 ## Examples
 
-### Example #1 using render method
-```
-<?php
+### Basic build
 
+```
 $form = new \Form\Form();
 $form->setFormAttr('method', 'post') //POST, GET, REQUEST (DEFAULT is GET)
     ->setFormAttr('action', 'main-action.php');
@@ -63,9 +62,35 @@ $form->setField(
     ->setFieldDecorator('<div>', '</div>');
 
 if ($form->hasPost()) {
+    //Populate data for fields if as invalid fields
     !$form->isValid() ? $form->populate() : '';
 }
+```
 
+### Output Example #1 using render method
+```
 $form->render();
+```
 
+### Output Example #2 use foreach loop with $form->renderDecorator()
+```
+<form action="" method="post" class="form container border mt-3 mb-5 p-5" >
+    <?php foreach (array_keys($form->getFields()) as $id) {
+        echo $form->renderDecorator($id);
+        echo $form->renderField($id);
+        echo $form->renderDecorator($id, true);
+    } ?>
+</form>
+```
+
+### Output Example #3 use foreach loop without $form->renderDecorator()
+```
+<form action="" method="post" class="form container border mt-3 mb-5 p-5" >
+    <?php foreach (array_keys($form->getFields()) as $id) { ?>
+    <div class="form-group border p-2 text-center" >
+        <?php echo $form->renderField($id); ?>
+        <?php echo $form->getFieldErrorMessage($id); ?>
+    </div>
+    <?php } ?>
+</form>
 ```
