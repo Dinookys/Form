@@ -227,7 +227,7 @@ final class Form
     }
 
     public function getFieldDecorator($id, $after = false)
-    {        
+    {
         if ($after) {
             return isset($this->decorators[$id])
                 ? sprintf($this->decorators[$id]['after'], $this->getFieldErrorMessage($id))
@@ -351,7 +351,7 @@ final class Form
         }
 
         //IF is empty return true
-        return !empty($this->messagesErrors);
+        return empty($this->messagesErrors);
     }
 
     /**
@@ -363,12 +363,12 @@ final class Form
         $data = array_merge($this->getData(), $data);
 
         foreach ($this->fields as $id => $fieldArr) {
-                list($attrs, $field) = $fieldArr;
+            list($attrs, $field) = $fieldArr;
 
-                if (isset($data[$id])) {
-                    $attrs['value'] = $data[$id];
-                    $this->fields[$id][0] = $attrs;
-                }
+            if (isset($data[$id])) {
+                $attrs['value'] = $data[$id];
+                $this->fields[$id][0] = $attrs;
             }
+        }
     }
 }
