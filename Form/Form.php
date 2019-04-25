@@ -14,7 +14,7 @@ final class Form
     private $messagesErrors = array();
     private $formAttrs = array();
     private $validators = array();
-    private $formData = array();
+    private $data = array();
     private $currentFieldID = '';
     private $fieldCSSClass = array('valid' => 'is-valid', 'invalid' => 'is-invalid', 'initial' => '');
     private $decorators = array();
@@ -85,8 +85,8 @@ final class Form
     public function setCSSClass($id = null, $type = '')
     {
         list($attrs) = $this->getField($id);
-        $attrs['class'] = isset($attrs['class']) 
-            ? $attrs['class'] . ' ' . $this->fieldCSSClass[$type] 
+        $attrs['class'] = isset($attrs['class'])
+            ? $attrs['class'] . ' ' . $this->fieldCSSClass[$type]
             : $this->fieldCSSClass[$type];
         $this->fields[$id][0] = $attrs;
     }
@@ -112,6 +112,10 @@ final class Form
 
         if (!empty($this->fieldCSSClass['initial'])) {
             $attrs['class'] = isset($attrs['class']) ? $this->fieldCSSClass['initial'] . ' ' . $attrs['class'] : $this->fieldCSSClass['initial'];
+        }
+
+        if (!isset($attrs['id'])) {
+            $attrs['id'] = $id;
         }
 
         $this->fields[$id] = [
@@ -154,7 +158,16 @@ final class Form
 
     public function setData($data)
     {
-        $this->data = $data;
+        foreach (array_keys($this->getFields()) as $id) {
+
+            list($attrs, $field) = $this->getField($id);
+
+            // Prevent add \Fields\_Empty Decorator into data
+            // and verify if exist the field into request
+            if (!$field instanceof \Fields\_Empty && isset($data[$id])) {
+                $this->data[$id] = $data[$id];
+            }
+        }
     }
 
     public function getData()
@@ -208,28 +221,20 @@ final class Form
 
     public function getFieldErrorMessage($id = null)
     {
-        if(is_null($id)) return null;
+        if (is_null($id)) return null;
 
         return isset($this->messagesErrors[$id]) ? $this->messagesErrors[$id] : null;
-
     }
 
-    public function getFormData()
-    {
-        return $this->formData;
-    }
-
-    public function renderDecorator($id, $closeDecorator = false)
-    {
-        if (!$closeDecorator) {
-            return isset($this->decorators[$id]) ? $this->decorators[$id]['before'] : $this->decoratorBefore;
+    public function getFieldDecorator($id, $after = false)
+    {        
+        if ($after) {
+            return isset($this->decorators[$id])
+                ? sprintf($this->decorators[$id]['after'], $this->getFieldErrorMessage($id))
+                : sprintf($this->decoratorAfter,  $this->getFieldErrorMessage($id));
         }
 
-        if ($closeDecorator) {
-            return isset($this->decorators[$id]) 
-            ? sprintf($this->decorators[$id]['after'], $this->getFieldErrorMessage($id)) 
-            : sprintf($this->decoratorAfter,  $this->getFieldErrorMessage($id));
-        }
+        return isset($this->decorators[$id]) ? $this->decorators[$id]['before'] : $this->decoratorBefore;
     }
 
     /**
@@ -246,12 +251,22 @@ final class Form
 
             list($attrs, $field) = $field;
 
-            echo $this->renderDecorator($id);
+            echo $this->getFieldDecorator($id);
+
+            if (isset($attrs['label'])) {
+                $this->renderLabel($attrs['label'], $id);
+                unset($attrs['label']);
+            }
 
             echo $field->render($attrs);
 
-            echo $this->renderDecorator($id, true);
+            echo $this->getFieldDecorator($id, true);
         }
+    }
+
+    public function renderLabel($label, $id)
+    {
+        echo '<label for="' . $id . '">' . $label . '</label>';
     }
 
     /**
@@ -315,10 +330,10 @@ final class Form
     {
         $data = $this->getData();
 
-        if(empty($data)) return false;
+        if (empty($data)) return false;
 
         foreach ($this->getAllValidators() as $id => $validators) {
-            foreach ($validators as $validator) {                
+            foreach ($validators as $validator) {
                 $value = isset($data[$id]) ? $data[$id] : null;
 
                 if (false == $validator->validation($value, $this) && false == isset($this->messagesErrors[$id])) {
@@ -326,11 +341,10 @@ final class Form
 
                     //Set invalid CSS Class
                     $this->setCSSClass($id, 'invalid');
-                                
-                }                
+                }
             }
 
-            if( !isset($this->messagesErrors[$id]) ) {
+            if (!isset($this->messagesErrors[$id])) {
                 //Set valid CSS Class
                 $this->setCSSClass($id, 'valid');
             }
@@ -341,20 +355,20 @@ final class Form
     }
 
     /**
-     * Fill value for all fields
+     * Fill in the fields with other values, not the requisition
+     * @param array $data fill external values
      */
-    public function populate()
+    public function populate($data = array())
     {
-        $data = $this->getData();
+        $data = array_merge($this->getData(), $data);
 
-        foreach($this->fields as $id => $fieldArr) 
-        {
-            list($attrs, $field) = $fieldArr;
+        foreach ($this->fields as $id => $fieldArr) {
+                list($attrs, $field) = $fieldArr;
 
-            if(isset($data[$id])) {
-                $attrs['value'] = $data[$id];
-                $this->fields[$id][0] = $attrs;
+                if (isset($data[$id])) {
+                    $attrs['value'] = $data[$id];
+                    $this->fields[$id][0] = $attrs;
+                }
             }
-        }
     }
 }
