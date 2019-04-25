@@ -17,7 +17,8 @@ $form->setFieldsCSSClass(array(
     'initial' => 'form-control'
 ));
 
-// $form->setField($attrs, $field)
+// $form->setField($id, $attrs, $field)
+// $id used the same field name
 // $attrs form field
 // $field class of the field
 
