@@ -371,4 +371,12 @@ final class Form
             }
         }
     }
+
+    /**
+     * Remove all fields from form
+     */
+    public function removeFields()
+    {
+        $this->fields = array();
+    }
 }
