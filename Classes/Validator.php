@@ -24,4 +24,14 @@ abstract class Validator {
     {
         return $this->message;
     }
+
+    /**
+     * Method for set custom error message
+     */
+    public function setMessage($message = null)
+    {
+        if($message) {
+            $this->message = $message;
+        }
+    }
 }
