@@ -10,7 +10,7 @@ class Cnpj extends Validator
 
     protected $message = 'CNPJ inválido';
 
-    public function validation($value, \Form\Form $instance)
+    public function validation($value, \Form\Form $instance, $id = null)
     {
         $cnpjs = array(
             '00000000000000',

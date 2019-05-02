@@ -8,9 +8,9 @@ use Classes\Validator;
 class Email extends Validator
 {    
 
-    protected $message = 'The email is not in a valid format';
+    protected $message = 'O email não está em um formato válido';
 
-    public function validation($value, \Form\Form $instance)
+    public function validation($value, \Form\Form $instance, $id = null)
     {
         return filter_var($value, FILTER_VALIDATE_EMAIL) ? true : false;
     }

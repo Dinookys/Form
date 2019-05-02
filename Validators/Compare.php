@@ -23,7 +23,7 @@ class Compare extends Validator
         $this->compare = $compare;
     }
 
-    public function validation($value, \Form\Form $instance)
+    public function validation($value, \Form\Form $instance, $id = null)
     {
         $data_compare = $instance->getData()[$this->compare];
 

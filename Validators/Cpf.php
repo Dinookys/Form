@@ -10,7 +10,7 @@ class Cpf extends Validator
 
     protected $message = 'CPF inválido';
 
-    public function validation($value, \Form\Form $instance)
+    public function validation($value, \Form\Form $instance, $id = null)
     {
         $cpfs = array(
             '00000000000',

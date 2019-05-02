@@ -8,9 +8,9 @@ use Classes\Validator;
 class Required extends Validator
 {    
 
-    protected $message = 'This field is required';
+    protected $message = 'Este campo é obrigatório';
 
-    public function validation($value, \Form\Form $instance)
+    public function validation($value, \Form\Form $instance, $id = null)
     {
         if(is_string($value)) {
             $value = trim($value);
