@@ -31,9 +31,6 @@ final class Form
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     private function setCurrentFieldID(string $id)
     {
         $this->currentFieldID = $id;
@@ -118,6 +115,10 @@ final class Form
             $attrs['id'] = $id;
         }
 
+        if (isset($attrs['label']) && !isset($attrs['placeholder'])) {
+            $attrs['placeholder'] = $attrs['label'];
+        }
+
         $this->fields[$id] = [
             $attrs,
             $field
@@ -161,6 +162,11 @@ final class Form
         foreach (array_keys($this->getFields()) as $id) {
 
             list($attrs, $field) = $this->getField($id);
+
+            if(isset($attrs['type']) && strtolower($attrs['type']) == 'file' && isset($_FILES[$id])) {
+                $this->data[$id] = $_FILES[$id];
+                continue;
+            }
 
             // Prevent add \Fields\_Empty Decorator into data
             // and verify if exist the field into request
@@ -336,7 +342,7 @@ final class Form
             foreach ($validators as $validator) {
                 $value = isset($data[$id]) ? $data[$id] : null;
 
-                if (false == $validator->validation($value, $this) && false == isset($this->messagesErrors[$id])) {
+                if (false == $validator->validation($value, $this, $id) && false == isset($this->messagesErrors[$id])) {
                     $this->messagesErrors[$id] = $validator->getMessage();
 
                     //Set invalid CSS Class
@@ -365,7 +371,11 @@ final class Form
         foreach ($this->fields as $id => $fieldArr) {
             list($attrs, $field) = $fieldArr;
 
-            if (isset($data[$id])) {
+            if (
+                isset($data[$id])
+                && !$field instanceof \Fields\_Empty
+                && ($field instanceof \Fields\Input && $attrs['type'] != 'file')
+            ) {
                 $attrs['value'] = $data[$id];
                 $this->fields[$id][0] = $attrs;
             }
