@@ -12,9 +12,11 @@ abstract class Validator {
     /**
      * Method for create validation logic
      * @param string|array|object $value 
+     * @param object $instance instance of current Form class
+     * @param string $id of current field
      * @return bool
      */
-    abstract function validation($value, \Form\Form $instance);
+    abstract function validation($value, \Form\Form $instance, $id = null);
 
     /**
      * Method for invoking the error message
