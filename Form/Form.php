@@ -163,7 +163,7 @@ final class Form
 
             list($attrs, $field) = $this->getField($id);
 
-            if(isset($attrs['type']) && strtolower($attrs['type']) == 'file' && isset($_FILES[$id])) {
+            if (isset($attrs['type']) && strtolower($attrs['type']) == 'file' && isset($_FILES[$id])) {
                 $this->data[$id] = $_FILES[$id];
                 continue;
             }
@@ -372,13 +372,14 @@ final class Form
             list($attrs, $field) = $fieldArr;
 
             if (
-                isset($data[$id])
-                && !$field instanceof \Fields\_Empty
-                && ($field instanceof \Fields\Input && $attrs['type'] != 'file')
+                $field instanceof \Fields\_Empty
+                or ($field instanceof \Fields\Input && strtolower($attrs['type']) == 'file')
             ) {
-                $attrs['value'] = $data[$id];
-                $this->fields[$id][0] = $attrs;
+                continue;
             }
+
+            $attrs['value'] = $data[$id];
+            $this->fields[$id][0] = $attrs;
         }
     }
 
