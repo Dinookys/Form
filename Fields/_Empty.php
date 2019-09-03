@@ -1,4 +1,5 @@
 <?php
+
 namespace Fields;
 
 use Classes\Field;
@@ -9,6 +10,13 @@ use Classes\Field;
  */
 class _Empty extends Field
 {
-    public function render(array $attrs)
-    { }
+  public function __construct($html = '')
+  {
+    $this->html = $html;
+  }
+
+  public function render(array $attrs)
+  {
+    return $this->html;
+  }
 }

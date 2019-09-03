@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Validators;
 
@@ -6,12 +6,12 @@ namespace Validators;
 use Classes\Validator;
 
 class Email extends Validator
-{    
+{
 
-    protected $message = 'O email não está em um formato válido';
+  protected $message = 'O email não está em um formato válido';
 
-    public function validation($value, \Form\Form $instance, $id = null)
-    {
-        return filter_var($value, FILTER_VALIDATE_EMAIL) ? true : false;
-    }
+  public function validation($value, \Form\Form $instance, $id = null)
+  {
+    return filter_var($value, FILTER_VALIDATE_EMAIL) ? true : false;
+  }
 }
