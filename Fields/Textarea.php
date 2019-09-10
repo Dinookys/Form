@@ -17,7 +17,7 @@ class Textarea extends Field
 
         $attrs = array_merge($default_attrs, $attrs);
         $value = $attrs['value'];
-        unset($value);
+        unset($attrs['value']);
 
         return '<textarea '. $this->placeAttrs($attrs) .' >'. $value .'</textarea>';
     }
