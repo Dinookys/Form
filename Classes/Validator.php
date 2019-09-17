@@ -3,7 +3,7 @@
 namespace Classes;
 
 /**
- * Inteface for create validation
+ * Interface for create validation
  */
 abstract class Validator
 {
