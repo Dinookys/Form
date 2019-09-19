@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Inteface for create validation
+ * Class for create Form
  */
 
 namespace Form;
@@ -84,13 +84,8 @@ final class Form
    */
   public function setCSSClass($id = null, $type = '')
   {
-    list($attrs) = $this->getField($id);
-    $attrs['class'] = isset($attrs['class'])
-      ? $attrs['class'] . ' ' . $this->fieldCSSClass[$type]
-      : $this->fieldCSSClass[$type];
-    $this->fields[$id][0] = $attrs;
-
-    $this->fieldValidationCSS[$id] = $this->fieldCSSClass[$type];
+    $class = isset($this->fieldCSSClass[$type]) ? $this->fieldCSSClass[$type] : '';
+    $this->fieldValidationCSS[$id] = $class;
   }
 
   public function getCSSClass($id)
@@ -117,12 +112,17 @@ final class Form
       return false;
     }
 
+
     if (!empty($this->fieldCSSClass['initial'])) {
       $attrs['class'] = isset($attrs['class']) ? $this->fieldCSSClass['initial'] . ' ' . $attrs['class'] : $this->fieldCSSClass['initial'];
     }
 
     if (!isset($attrs['id'])) {
       $attrs['id'] = $id;
+    }
+
+    if (!isset($attrs['name'])) {
+      $attrs['name'] = $id;
     }
 
     if (isset($attrs['label']) && !isset($attrs['placeholder'])) {
@@ -272,6 +272,10 @@ final class Form
         unset($attrs['label']);
       }
 
+      if (isset($this->fieldValidationCSS[$id]) && isset($attrs['class'])) {
+        $attrs['class'] = $attrs['class'] . ' ' . $this->fieldValidationCSS[$id];
+      }
+
       echo $field->render($attrs);
 
       echo $this->getFieldDecorator($id, true);
@@ -294,6 +298,10 @@ final class Form
     }
 
     list($attrs, $field) = $this->getField($id);
+
+    if (isset($this->fieldValidationCSS[$id]) && isset($attrs['class'])) {
+      $attrs['class'] = $attrs['class'] . ' ' . $this->fieldValidationCSS[$id];
+    }
 
     echo $field->render($attrs);
   }
@@ -343,10 +351,18 @@ final class Form
   public function isValid()
   {
     $data = $this->getData();
+    $fields = $this->getFields();
 
     if (empty($data)) return false;
 
     foreach ($this->getAllValidators() as $id => $validators) {
+
+      list($attrs, $field) = $fields[$id];
+
+      if ($field instanceof \Fields\_Empty or (isset($attrs['type']) == 'submit' && $attrs['type'] == 'submit')) {
+        continue;
+      }
+
       foreach ($validators as $validator) {
         $value = isset($data[$id]) ? $data[$id] : null;
 
@@ -365,7 +381,10 @@ final class Form
     }
 
     //IF is empty return true
-    return empty($this->messagesErrors);
+    if (empty($this->messagesErrors)) {
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -381,7 +400,7 @@ final class Form
 
       if (
         $field instanceof \Fields\_Empty
-        or ($field instanceof \Fields\Input && strtolower($attrs['type']) == 'file')
+        or ($field instanceof \Fields\Input && in_array(strtolower($attrs['type']), ['file', 'submit']))
       ) {
         continue;
       }
@@ -394,6 +413,8 @@ final class Form
 
         if ($attrs['value'] == $checkedValue) {
           $attrs['checked'] = 'checked';
+        } else {
+          unset($attrs['checked']);
         }
 
         $this->fields[$id][0] = $attrs;
@@ -404,13 +425,30 @@ final class Form
       $attrs['value'] = $data[$id];
       $this->fields[$id][0] = $attrs;
     }
+
+    return $this;
+  }
+
+  /**
+   * Clear Data and CSS validations class of all fields
+   * @return $this
+   */
+  public function clear()
+  {
+    $this->data = array();
+    $this->fieldValidationCSS = array();
+
+    return $this;
   }
 
   /**
    * Remove all fields from form
+   * @return $this
    */
   public function removeFields()
   {
     $this->fields = array();
+
+    return $this;
   }
 }
