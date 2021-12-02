@@ -1,6 +1,6 @@
 <?php
 
-namespace Traits;
+namespace Form\Traits;
 
 trait HelperHTML
 {
@@ -14,7 +14,7 @@ trait HelperHTML
     $result = ' ';
 
     foreach ($attrs as $attr => $value) {
-      $result .= $attr . '="' . $value . '" ';
+      $result .= $attr . '="' . htmlentities($value) . '" ';
     }
 
     return $result;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Classes;
+namespace Form\Base;
 
 /**
  * Interface for create validation

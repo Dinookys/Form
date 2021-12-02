@@ -1,8 +1,8 @@
 <?php
 
-namespace Fields;
+namespace Form\Fields;
 
-use Classes\Field;
+use Form\Base\Field;
 
 /**
  * Special Class for render empty, Use to create extra html elements

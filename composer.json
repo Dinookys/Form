@@ -1,5 +1,5 @@
 {
-    "name": "dino/form-validation",
+    "name": "dino/small-form",
     "authors": [
         {
             "name": "DinoOkys",
@@ -8,12 +8,8 @@
     ],
     "require": {},
     "autoload": {
-        "psr-4": {
-            "Classes\\" : "Classes",
-            "Fields\\" : "Fields",
-            "Validators\\" : "Validators",
-            "Form\\" : "Form",
-            "Traits\\": "Traits"
+        "psr-4": {            
+            "Form\\" : "Form"
         }
     }
 }

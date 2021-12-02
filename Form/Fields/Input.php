@@ -1,7 +1,7 @@
 <?php
-namespace Fields;
+namespace Form\Fields;
 
-use Classes\Field;
+use Form\Base\Field;
 
 /**
  * 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Validators;
+namespace Form\Validators;
 
 
-use Classes\Validator;
+use Form\Base\Validator;
 
 /**
  * @param string $compare field name for comparation 

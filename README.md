@@ -6,12 +6,15 @@ Classes for constructing forms with validation
 ### Basic build
 
 ```
-$form = new \Form\Form();
-$form->setFormAttr('method', 'post') //POST, GET, REQUEST (DEFAULT is GET)
-    ->setFormAttr('action', 'main-action.php');
+//POST, GET, REQUEST (DEFAULT is GET)
+$form = new \Form\Form(array(
+    'method' => 'post',
+    'action' => ''
+));
 
 // Parameter $after of decorator accepts %s replace to message error if exists
-$form->setFieldsDecorator('<div class="form-group">', '<span class="error">%s</span></div>');
+$form->setFieldsDecorator('<div class="form-group my-3">', '</div>', 'initial,valid');
+$form->setFieldsDecorator('<div class="form-group my-3">', '<div class="invalid-feedback">%s</div></div>', 'invalid');
 
 $form->setFieldsCSSClass(array(
     'initial' => 'form-control'
@@ -27,28 +30,23 @@ $form->setField(
     array(
         'name' => 'name',
         'type' => 'text',
-        'value' => '',
-        'placeholder' => 'Nome'
+        'placeholder' => 'Nome',
     ),
-    new \Fields\Input
-)
-    ->setFieldValidator(new \Validators\Required);
+    new \Form\Fields\Input
+);
 
 $form->setField(
     'email',
     array(
         'name' => 'email',
         'type' => 'email',
-        'value' => '',
         'placeholder' => 'Email'
     ),
-    new \Fields\Input
-)
-    ->setFieldValidator(new \Validators\Required)
-    ->setFieldValidator(new \Validators\Email);
+    new \Form\Fields\Input
+);
 
 // Reset global class for prevent apply initial class on next fields after this point
-$form->setFieldsCSSClass(array('initial' => ''));
+$form->resetFieldsCSSClass();
 
 $form->setField(
     'submitButton',
@@ -58,9 +56,14 @@ $form->setField(
         'name' => 'submit',
         'class' => 'btn btn-primary'
     ),
-    new \Fields\Input
-)
-    ->setFieldDecorator('<div>', '</div>');
+    new \Form\Fields\Input
+)->setFieldDecorator('<div>', '</div>');
+
+
+// Set validations
+$form->setFieldValidator(new \Form\Validators\Required, 'name');
+$form->setFieldValidator(new \Form\Validators\Required, 'email')
+    ->setFieldValidator(new \Form\Validators\Email, 'email');
 
 if ($form->hasPost()) {
     //Populate data for fields if as invalid fields

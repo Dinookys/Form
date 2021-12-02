@@ -1,8 +1,8 @@
 <?php
 
-namespace Classes;
+namespace Form\Base;
 
-use Traits\HelperHTML;
+use Form\Traits\HelperHTML;
 
 abstract class Field
 {

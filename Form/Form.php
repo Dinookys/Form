@@ -6,23 +6,52 @@
 
 namespace Form;
 
-use Traits\HelperHTML;
+use Form\Traits\HelperHTML;
 
 final class Form
 {
   use HelperHTML;
 
-  private $fields = array();
-  private $messagesErrors = array();
-  private $formAttrs = array();
-  private $validators = array();
-  private $data = array();
   private $currentFieldID = '';
-  private $fieldCSSClass = array('valid' => 'is-valid', 'invalid' => 'is-invalid', 'initial' => '');
-  private $fieldValidationCSS = array();
+
+  private $data = array();
+
   private $decorators = array();
-  private $decoratorBefore = '<p>';
-  private $decoratorAfter = '<span class="error" >%s</span></p>';
+
+  private $decoratorBefore = array(
+    'valid'     => '<p>',
+    'invalid'  => '<p>',
+    'initial'  => '<p>',
+  );
+
+  private $decoratorAfter = array(
+    'valid'     => '</p>',
+    'invalid'  => '<span class="error" >%s</span></p>',
+    'initial'  => '</p>',
+  );
+
+  private $fieldsStatus = array();
+
+  private $fields = array();
+
+  private $formAttrs = array();
+
+  private $fieldCSSClass = array('valid' => 'is-valid', 'invalid' => 'is-invalid', 'initial' => '');
+
+  private $fieldValidationCSS = array();
+
+  private $messagesErrors = array();
+
+  private $status = array('initial', 'valid', 'invalid');
+
+  private $validators = array();
+
+  public function __construct(array $attrs = array())
+  {
+    foreach ($attrs as $attr => $value) {
+      $this->setFormAttr($attr, $value);
+    }
+  }
 
   /**
    * Set Form Attrs;
@@ -51,14 +80,25 @@ final class Form
     return $this;
   }
 
+  public function resetFieldsCSSClass()
+  {
+    $this->fieldCSSClass = array('valid' => 'is-valid', 'invalid' => 'is-invalid', 'initial' => '');
+
+    return $this;
+  }
+
   /**
    * Set decorator for any inputs did you replace use method setFieldDecorator
+   * @param string $status accepts valid, invalid and initial. use "," for multiples status
    * @return $this
    */
-  public function setFieldsDecorator($before = '', $after = '')
+  public function setFieldsDecorator($before = '', $after = '', $status = 'initial')
   {
-    $this->decoratorBefore = $before;
-    $this->decoratorAfter = $after;
+    
+    foreach (explode(',', $status) as $s) {
+      $this->decoratorBefore[$s] = $before;
+      $this->decoratorAfter[$s] = $after;
+    }
 
     return $this;
   }
@@ -67,12 +107,17 @@ final class Form
    * Set decorator for input
    * @return $this
    */
-  public function setFieldDecorator($before = '', $after = '', $id = null)
+  public function setFieldDecorator($before = '', $after = '', $status = 'initial', $id = null)
   {
     $id = $id ?? $this->currentFieldID;
 
-    $this->decorators[$id]['before'] = $before;
-    $this->decorators[$id]['after'] = $after;
+    if (!in_array($status, $this->status)) {
+      throw new \Exception('Incorrect value for parameter $status. Use: initial, valid or invalid');
+      $status = 'initial';
+    }
+
+    $this->decorators[$id][$status]['before'] = $before;
+    $this->decorators[$id][$status]['after'] = $after;
 
     return $this;
   }
@@ -86,6 +131,11 @@ final class Form
   {
     $class = isset($this->fieldCSSClass[$type]) ? $this->fieldCSSClass[$type] : '';
     $this->fieldValidationCSS[$id] = $class;
+  }
+
+  public function setFieldStatus($id = null, $type = 'initial')
+  {
+    $this->fieldsStatus[$id] = $type;
   }
 
   public function getCSSClass($id)
@@ -107,7 +157,7 @@ final class Form
       throw new \Exception('ID not defined');
     }
 
-    if (!$field instanceof \Classes\Field) {
+    if (!$field instanceof \Form\Base\Field) {
       throw new \Exception('Invalid Class');
       return false;
     }
@@ -140,14 +190,14 @@ final class Form
   }
 
   /**
-   * @param $validator
+   * @param \Form\Base\Validator $validator
    * @param string $id use if replace current fieldname
    * @return $this 
    */
-  public function setFieldValidator(\Classes\Validator $validator, $id = null)
+  public function setFieldValidator(\Form\Base\Validator $validator, $id = null)
   {
 
-    if (!$validator instanceof \Classes\Validator) {
+    if (!$validator instanceof \Form\Base\Validator) {
       throw new \Exception('Invalid Class');
       return false;
     }
@@ -178,9 +228,9 @@ final class Form
         continue;
       }
 
-      // Prevent add \Fields\_Empty Decorator into data
+      // Prevent add \Form\Fields\_Empty Decorator into data
       // and verify if exist the field into request
-      if (!$field instanceof \Fields\_Empty && isset($data[$id])) {
+      if (!$field instanceof \Form\Fields\_Empty && isset($data[$id])) {
         $this->data[$id] = $data[$id];
       }
     }
@@ -206,6 +256,11 @@ final class Form
     return $this->fields[$id];
   }
 
+  public function getFieldStatus($id = null)
+  {
+    return isset($this->fieldsStatus[$id]) ? $this->fieldsStatus[$id] : 'initial';
+  }
+
   /**
    * Retrive all valdiations of any elements
    */
@@ -219,7 +274,7 @@ final class Form
    */
   public function getFieldValidators($id = null)
   {
-    if (\is_null($id)) {
+    if (\is_null($id) || !isset($this->validators[$id])) {
       throw new \Exception('ID not defined');
       return false;
     }
@@ -244,11 +299,14 @@ final class Form
 
   public function getFieldDecorator($id, $after = false)
   {
+
+    $status = $this->getFieldStatus($id);
+
     if ($after) {
-      return sprintf((isset($this->decorators[$id]) ? $this->decorators[$id]['after'] : $this->decoratorAfter),  $this->getFieldErrorMessage($id));
+      return sprintf((isset($this->decorators[$id][$status]) ? $this->decorators[$id][$status]['after'] : $this->decoratorAfter[$status]),  $this->getFieldErrorMessage($id));
     }
 
-    return sprintf((isset($this->decorators[$id]) ? $this->decorators[$id]['before'] : $this->decoratorBefore), $this->getCSSClass($id));
+    return sprintf((isset($this->decorators[$id][$status]) ? $this->decorators[$id][$status]['before'] : $this->decoratorBefore[$status]), $this->getCSSClass($id));
   }
 
   /**
@@ -311,11 +369,18 @@ final class Form
    */
   public function render()
   {
-    echo '<form ' . $this->placeAttrs($this->formAttrs) . '>';
-
+    $this->renderTagForm();
     $this->renderFields();
+    $this->renderTagForm(true);
+  }
 
-    echo '</form>';
+  public function renderTagForm($closeTag = false)
+  {
+    if ($closeTag) {
+      echo "</form>\n";
+      return;
+    }
+    echo "<form {$this->placeAttrs($this->formAttrs)}>\n";
   }
 
   /**     
@@ -329,12 +394,11 @@ final class Form
       case 'post':
         $this->setData($_POST);
         break;
-      case 'request':
-        $this->setData($_REQUEST);
-        break;
       case 'get':
-      default:
         $this->setData($_GET);
+        break;
+      default:
+        $this->setData($_REQUEST);
         break;
     }
 
@@ -359,24 +423,26 @@ final class Form
 
       list($attrs, $field) = $fields[$id];
 
-      if ($field instanceof \Fields\_Empty or (isset($attrs['type']) == 'submit' && $attrs['type'] == 'submit')) {
-        continue;
-      }
+      if (
+        $field instanceof \Form\Fields\_Empty ||
+        (isset($attrs['type']) && $attrs['type'] == 'submit')
+      ) continue;
+
+      $this->setCSSClass($id, 'valid');
+      $this->setFieldStatus($id, 'valid');
 
       foreach ($validators as $validator) {
         $value = isset($data[$id]) ? $data[$id] : null;
 
-        if (false == $validator->validation($value, $this, $id) && false == isset($this->messagesErrors[$id])) {
+        if (isset($this->messagesErrors[$id])) continue;
+
+        if (false == $validator->validation($value, $this, $id)) {
           $this->messagesErrors[$id] = $validator->getMessage();
 
           //Set invalid CSS Class
           $this->setCSSClass($id, 'invalid');
+          $this->setFieldStatus($id, 'invalid');
         }
-      }
-
-      if (!isset($this->messagesErrors[$id])) {
-        //Set valid CSS Class
-        $this->setCSSClass($id, 'valid');
       }
     }
 
@@ -399,8 +465,8 @@ final class Form
       list($attrs, $field) = $fieldArr;
 
       if (
-        $field instanceof \Fields\_Empty
-        or ($field instanceof \Fields\Input && in_array(strtolower($attrs['type']), ['file', 'submit']))
+        $field instanceof \Form\Fields\_Empty
+        || ($field instanceof \Form\Fields\Input && in_array(strtolower($attrs['type']), ['file', 'submit']))
       ) {
         continue;
       }
@@ -408,7 +474,7 @@ final class Form
       /**
        * @todo alterar
        */
-      if ($field instanceof \Fields\Input && in_array($attrs['type'], ['checkbox', 'radio'])) {
+      if ($field instanceof \Form\Fields\Input && in_array($attrs['type'], ['checkbox', 'radio'])) {
         $checkedValue = $data[$id];
 
         if ($attrs['value'] == $checkedValue) {
