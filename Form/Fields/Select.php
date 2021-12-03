@@ -17,7 +17,7 @@ class Select extends Field
       'name' => 'inputName',
       'value' => '',
       'choices' => array(
-        array('value' => 'Select', 'title' => 'Select')
+        array('', 'Select')
       )
     );
 
@@ -29,21 +29,38 @@ class Select extends Field
     unset($attrs['value']);
 
     $html = '<select ' . $this->placeAttrs($attrs) . ' >';
-    foreach ($choices as $choice) {
-      if (is_array($choice)) {
-        $html .= '<option value="' . $choice['value'] . '" ' . $this->isSelected($value, $choice['value']) . '>' . $choice['title'] . '</option>' . PHP_EOL;
-      } else {
-        $html .= '<option value="' . $choice . '" ' . $this->isSelected($value, $choice) . '>' . $choice . '</option>' . PHP_EOL;
-      }
-    }
-    $html .= '</select>';
+    $html .= $this->loopOption($choices, $value);
+    $html .= "</select>";
 
     return $html;
   }
 
-  protected function isSelected($value1, $value2)
+  protected function loopOption($choices, $value)
   {
-    if ($value1 === $value2) {
+    $html = '';
+    foreach ($choices as $_choice) {
+
+      if (is_array($_choice)) {
+        list($choice, $label) = $_choice;
+      } else {
+        $label = $_choice;
+        $choice = $_choice;
+      }
+
+      $html .= '<option value="' . $choice . '" ' . $this->isSelected($value, $choice) . '>' . $label . '</option>' . PHP_EOL;
+    }
+
+    return $html;
+  }
+
+  protected function isSelected($value, $option_value)
+  {
+
+    if (is_array($value) && in_array($option_value, $value)) {
+      return 'selected';
+    }
+
+    if ($value === $option_value) {
       return ' selected';
     }
   }
