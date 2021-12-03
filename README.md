@@ -16,10 +16,6 @@ $form = new \Form\Form(array(
 $form->setFieldsDecorator('<div class="form-group my-3">', '</div>', 'initial,valid');
 $form->setFieldsDecorator('<div class="form-group my-3">', '<div class="invalid-feedback">%s</div></div>', 'invalid');
 
-$form->setFieldsCSSClass(array(
-    'initial' => 'form-control'
-));
-
 // $form->setField($id, $attrs, $field)
 // $id used the same field name
 // $attrs form field
@@ -31,6 +27,7 @@ $form->setField(
         'name' => 'name',
         'type' => 'text',
         'placeholder' => 'Nome',
+        'class' => 'form-control'
     ),
     new \Form\Fields\Input
 );
@@ -40,13 +37,53 @@ $form->setField(
     array(
         'name' => 'email',
         'type' => 'email',
-        'placeholder' => 'Email'
+        'placeholder' => 'Email',
+        'class' => 'form-control'
     ),
     new \Form\Fields\Input
 );
 
-// Reset global class for prevent apply initial class on next fields after this point
-$form->resetFieldsCSSClass();
+$form->setField(
+    'confirm_false',
+    array(
+        'type'  => 'radio',
+        'name'  => 'confirm',
+        'value' => 'false',
+        'label' => 'Não'
+    ),
+    new \Form\Fields\Input
+);
+
+$form->setField(
+    'confirm_true',
+    array(
+        'type'  => 'radio',
+        'name'  => 'confirm',
+        'value' => 'true',
+        'checked' => 'checked',
+        'label' => 'Sim',
+        'labelAttrs' => array(
+            'class' => 'label_class'
+        )
+    ),
+    new \Form\Fields\Input
+);
+
+$form->setField(
+    'select_example',
+    array(
+        'name' => 'select_example',
+        'class' => 'form-control',
+        'multiple' => '',
+        'value' => array('','valor2'),
+        'choices' => [
+            ['', '--Select--'],
+            ['valor', 'Valor'],
+            ['valor2', 'Valor2']
+        ]
+    ),
+    new \Form\Fields\Select
+);
 
 $form->setField(
     'submitButton',
@@ -57,7 +94,7 @@ $form->setField(
         'class' => 'btn btn-primary'
     ),
     new \Form\Fields\Input
-)->setFieldDecorator('<div>', '</div>');
+)->notUseFieldDecorator();
 
 
 // Set validations
