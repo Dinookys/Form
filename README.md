@@ -12,7 +12,7 @@ $form = new \Form\Form(array(
     'action' => ''
 ));
 
-// Parameter $after of decorator accepts %s replace to message error if exists
+// Parameter $close of decorator accepts %s replace to message error if exists
 $form->setFieldsDecorator('<div class="form-group my-3">', '</div>', 'initial,valid');
 $form->setFieldsDecorator('<div class="form-group my-3">', '<div class="invalid-feedback">%s</div></div>', 'invalid');
 
